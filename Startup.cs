@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using HotChocolate;
 using HotChocolate.AspNetCore;
 using HotChocolate.Subscriptions;
+using NetTopologySuite.Geometries;
 
 
 namespace StarWars
@@ -22,9 +23,10 @@ namespace StarWars
             // Add GraphQL Services
             services.AddGraphQL(sp => SchemaBuilder.New()
                 .AddServices(sp)
+                .BindClrType<Point, GeoScalar>()
+                .BindClrType<LineString, GeoScalar>()
                 .AddQueryType(d => d.Name("Query"))
                 .AddType<PointQuery>()
-
                 .Create());
         }
 
