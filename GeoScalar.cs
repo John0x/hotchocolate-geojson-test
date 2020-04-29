@@ -10,6 +10,10 @@ using NetTopologySuite.IO;
 
 namespace StarWars
 {
+/// <summary>
+    /// Parses geometry as GeoJSON format.
+    /// See: https://geojson.org/
+    /// </summary>
     public class GeoScalar : ScalarType<Geometry>
     {
         private AnyType _anyType = new AnyType();
@@ -23,6 +27,7 @@ namespace StarWars
             if (literal == null) throw new ArgumentNullException(nameof(literal));
 
             return literal is ObjectValueNode
+                   || literal is StringValueNode 
                    || literal is NullValueNode;
         }
 
@@ -32,6 +37,23 @@ namespace StarWars
 
             if (literal is NullValueNode) return null;
 
+            if (literal is StringValueNode stringLiteral)
+            {
+                var reader = new GeoJsonReader();
+                var geoObject = reader.Read<Geometry>(stringLiteral.Value);
+                if (geoObject == null)
+                {
+                    var error = new ErrorBuilder()
+                        .SetCode("INVALID_ARG")
+                        .SetMessage($"Couldn't convert {literal} to GeoJson")
+                        .AddLocation(literal.Location.Line, literal.Location.Column)
+                        .Build();
+
+                    throw new QueryException(error);
+                }
+
+                return geoObject; 
+            }
             if (literal is ObjectValueNode obj)
             {
                 var objStr = QuerySyntaxSerializer.Serialize(literal);
@@ -56,10 +78,7 @@ namespace StarWars
 
         public override IValueNode ParseValue(object value)
         {
-            if (value == null)
-            {
-                return new NullValueNode(null);
-            }
+            if (value == null) return new NullValueNode(null);
 
             if (value is Geometry)
             {
@@ -81,10 +100,7 @@ namespace StarWars
 
         public override object Serialize(object value)
         {
-            if (value == null)
-            {
-                return null;
-            }
+            if (value == null) return null;
 
             if (value is Geometry geo)
             {
@@ -93,16 +109,16 @@ namespace StarWars
                 var writer = new GeoJsonWriter();
                 var geoStr = writer.Write(geo);
 
-                var reader = new GeoJsonReader();
-                var deObj = reader.Read<object>(geoStr);
+                // var reader = new GeoJsonReader();
+                // var deObj = reader.Read<object>(geoStr);
 
-                // This will throw an exception, since it's not a .net native type 
-                return deObj;
+                // TODO: Wait for better alternative
+                // Erstmal einfach als str zurückgeben
+                return geoStr;
             }
 
             throw new ArgumentException(
                 "The specified value cannot be serialized by the StringType.");
         }
     }
-
 }

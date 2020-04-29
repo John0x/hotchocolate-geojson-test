@@ -5,7 +5,9 @@ using Microsoft.Extensions.Hosting;
 using HotChocolate;
 using HotChocolate.AspNetCore;
 using HotChocolate.Subscriptions;
+using HotChocolate.Types;
 using NetTopologySuite.Geometries;
+using StarWars.Geo;
 
 
 namespace StarWars

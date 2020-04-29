@@ -1,18 +1,19 @@
 using HotChocolate.Types;
 using NetTopologySuite.Geometries;
+using StarWars.Geo;
 
 namespace StarWars
 {
     [ExtendObjectType(Name = "Query")]
     public class PointQuery
     {
-        public Point Hello(Point startPoint)
+        public string Hello(PointObject startPoint)
         {
-            // Debug: the input startPoint gets converted properly
-            var p = new Point(1, 1);
-            
-            // Debug: but it fails to convert the output
-            return p;
+            // convert to real Point
+            var p = new Point(1, 2);
+
+            // convert to PointOutput
+            return "da";
         }
     }
 }
